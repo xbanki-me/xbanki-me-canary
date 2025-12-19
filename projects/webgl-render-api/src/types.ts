@@ -6,367 +6,161 @@
  *               See LICENSE for more details.
  *    @author    xbanki <contact@xbanki.me>
  *    @since     1.1.0
- *    @version   1.1.0
+ *    @version   2.0.0
  *
  */
 
 /**
- * Shader compilation type.
+ * WebGL GLSL valid type literals.
  */
-export enum EShaderType {
-    FRAGMENT = 35632,
-    VERTEX = 35633,
+export enum EWebGLTypeDeclaration {
+    VOID = 'void',
+    BOOL = 'bool',
+    INT = 'int',
+    FLOAT = 'float',
+    BVEC2 = 'bvec2',
+    BVEC3 = 'bvec3',
+    BVEC4 = 'bvec4',
+    IVEC2 = 'ivec2',
+    IVEC3 = 'ivec3',
+    IVEC4 = 'ivec4',
+    VEC2 = 'vec2',
+    VEC3 = 'vec3',
+    VEC4 = 'vec4',
+    MAT2 = 'mat2',
+    MAT3 = 'mat3',
+    MAT4 = 'mat4',
+    SAMPLER2D = 'sampler2D',
+    SAMPLERCUBE = 'samplerCube',
 }
 
 /**
- * Render context.
+ * Helper type for string literal enums, which allows using both the enum
+ * directly as a type (I.E. `Foo.BAR`) and the string literal itself.
  */
-export type Context = IContextProperties & IContextMethods;
+export type K<T extends boolean | number | bigint | string> = `${T}` | T;
 
 /**
- * Render context options.
+ * 4 by 4 matrix.
  */
-export type Options = IOptionsProperties & IOptionsMethods;
+export type Matrix16<T> = readonly [
+    T,
+    T,
+    T,
+    T,
+    T,
+    T,
+    T,
+    T,
+    T,
+    T,
+    T,
+    T,
+    T,
+    T,
+    T,
+    T,
+];
 
 /**
- * WebGL window resize function.
+ * 3 by 3 matrix.
  */
-export type ResizeFn = (this: Context) => void;
+export type Matrix9<T> = readonly [
+    T,
+    T,
+    T,
+    T,
+    T,
+    T,
+    T,
+    T,
+    T,
+];
 
 /**
- * WebGL render function.
+ * 2 by 2 matrix.
  */
-export type RenderFn = (this: Context) => void;
+export type Matrix4<T> = readonly [
+    T,
+    T,
+    T,
+    T,
+];
 
 /**
- * Resets the current render state. Does not force render to stop.
+ * Flat 3 element matrix.
  */
-export type ResetFn = (this: Context) => Context;
+export type Matrix3<T> = readonly [
+    T,
+    T,
+    T,
+];
 
 /**
- * Starts the render loop simulation.
+ * Flat 2 element matrix.
  */
-export type ShadeFn = (this: Context) => Context;
+export type Matrix2<T> = readonly [
+    T,
+    T,
+];
 
 /**
- * Stops the render loop simulation. Does not reset context uniforms.
+ * GLSL boolean helper type. Booleans can be expressed as a single bit.
  */
-export type StopFn = (this: Context) => Context;
+export type GLSLBoolean = boolean | number;
 
 /**
- * Uniform pointer map.
+ * Valid variable types for a WebGL uniform.
  */
-export interface IContextPropertiesPointers {
-    /**
-     * Viewport resolution.
-     */
-    iResolution: WebGLUniformLocation;
-
-    /**
-     * Elapsed time since simulation start.
-     */
-    iTime: WebGLUniformLocation;
-
-    /**
-     * Pattern seed.
-     */
-    iSeed: WebGLUniformLocation;
-
-    /**
-     * Render quad vertex positions.
-     */
-    vertexInPosition: GLint;
-}
+export type WebGLUniform =
+    | Matrix4<GLSLBoolean>
+    | Matrix3<GLSLBoolean>
+    | Matrix2<GLSLBoolean>
+    | Matrix16<number>
+    | Matrix9<number>
+    | Matrix4<number>
+    | Matrix3<number>
+    | Matrix2<number>
+    | WebGLTexture
+    | Float32Array
+    | Int32Array
+    | boolean
+    | number
+    | never
+    | void;
 
 /**
- * Render uniforms which persist between frames.
- */
-export interface IContextPropertiesUniforms {
-    /**
-     * First frame draw time in milliseconds.
-     */
-    initialDrawTime: number;
-
-    /**
-     * Frame draw time since last draw.
-     */
-    drawTime: number;
-
-    /**
-     * Pattern seed.
-     */
-    seed: number;
-}
-
-/**
- * Resize state.
- */
-export interface IContextPropertiesStateResize {
-    /**
-     * Controls renderer resize on viewport element size change.
-     */
-    enabled: boolean;
-
-    /**
-     * Height since last resize event.
-     */
-    height: number;
-
-    /**
-     * Width since last resize event.
-     */
-    width: number;
-}
-
-/**
- * Current render state.
- */
-export interface IContextPropertiesState {
-    /**
-     * Resize state.
-     */
-    resize: IContextPropertiesStateResize;
-
-    /**
-     * Wether renderer is simulating.
-     */
-    rendering: boolean;
-}
-
-/**
- * External callbacks which get called during the render loop.
- */
-export interface IContextPropertiesCallbacks {
-    onBeforeRender: OnBeforeRenderFn;
-    onAfterRender: OnAfterRenderFn;
-    onError: OnErrorFn;
-    resize: ResizeFn;
-    render: RenderFn;
-}
-
-/**
- * Render context global properties.
- */
-export interface IContextProperties {
-    /**
-     * External callbacks which get called during the render loop.
-     */
-    callbacks: IContextPropertiesCallbacks;
-
-    /**
-     * Uniform pointer map.
-     */
-    pointers: IContextPropertiesPointers;
-
-    /**
-     * Render uniforms which persist between frames.
-     */
-    uniforms: IContextPropertiesUniforms;
-
-    /**
-     * WebGL rendering context that is attached to the render canvas.
-     */
-    context: WebGL2RenderingContext;
-
-    /**
-     * Current render state.
-     */
-    state: IContextPropertiesState;
-
-    /**
-     * Render canvas element.
-     */
-    canvas: HTMLCanvasElement;
-
-    /**
-     * The actual compiled WebGL program.
-     */
-    program: WebGLProgram;
-}
-
-/**
- * Global context methods.
- */
-export interface IContextMethods {
-    reset: ResetFn;
-    shade: ShadeFn;
-    stop: StopFn;
-}
-
-/**
- * Function that is called before any uniforms are updated, and before a frame
- * is rendered.
- * @param context Render context.
- */
-export type OnBeforeRenderFn = (context: Context) => void;
-
-/**
- * Function that is called after all context uniforms have been updated, and
- * after the renderer has finished rendering the frame.
- * @param context Render context.
- */
-export type OnAfterRenderFn = (context: Context) => void;
-
-/**
- * Function that gets called whenever an error occurs. The error may originate
- * from library code, or standard library.
- */
-export type OnErrorFn = (error?: Error) => void;
-
-/**
- * Function that gets called whenever context initialization has finished.
- * @param context Initialized renderer context.
- */
-export type OnInitFn = (context: Context) => void;
-
-/**
- * WebGL renderer power preference.
- */
-export enum EPowerPreference {
-    HIGH_PERFORMANCE = 'high-performance',
-    LOW_POWER = 'low-power',
-    DEFAULT = 'default',
-}
-
-/**
- * WebGL renderer option properties.
+ * Constrains the declared type for a variable based on the underlying input
+ * type, which itself is constrained to `WebGLUniform`.
  *
- * {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext#alpha_2|MDN Reference}
+ * Both `never` and `void` are considered invalid states, which only happen
+ * when the input type does not fit the constraints specified.
  */
-export interface IOptionsPropertiesRenderer {
-    /**
-     * A boolean value that indicates if a context will be created if the
-     * system performance is low or if no hardware GPU is available.
-     */
-    failMajorPerformanceCaveat: boolean;
-
-    /**
-     * f the value is true the buffers will not be cleared and will preserve
-     * their values until cleared or overwritten by the author.
-     */
-    preserveDrawingBuffer: boolean;
-
-    /**
-     * A boolean value that indicates that the page compositor will assume the
-     * drawing buffer contains colors with pre-multiplied alpha.
-     */
-    premultipliedAlpha: boolean;
-
-    /**
-     * A hint to the user agent indicating what configuration of GPU is
-     * suitable for the WebGL context. Possible values are:
-     */
-    powerPreference: EPowerPreference;
-
-    /**
-     * A boolean value that hints the user agent to reduce the latency by
-     * desynchronizing the canvas paint cycle from the event loop.
-     */
-    desynchronized: boolean;
-
-    /**
-     *  boolean value that hints to the user agent to use a compatible graphics
-     *  adapter for an immersive XR device. Setting this synchronous flag at
-     *  context creation is discouraged; rather call the asynchronous
-     *  `WebGLRenderingContext.makeXRCompatible()` method the moment you intend
-     *  to start an XR session.
-     */
-    xrCompatible: boolean;
-
-    /**
-     * A boolean value that indicates whether or not to perform anti-aliasing
-     * if possible.
-     */
-    antialias: boolean;
-
-    /**
-     * A boolean value that indicates that the drawing buffer is requested to
-     * have a stencil buffer of at least 8 bits.
-     */
-    stencil: boolean;
-
-    /**
-     * A boolean value that indicates if the canvas contains an alpha buffer.
-     */
-    alpha: boolean;
-
-    /**
-     * A boolean value that indicates that the drawing buffer is requested to
-     * have a depth buffer of at least 16 bits.
-     */
-    depth: boolean;
-}
-
-/**
- * WebGL shader properties.
- */
-export interface IOptionsPropertiesShaders {
-    /**
-     * Main fragment shader. All child-shaders should plug into this shader.
-     */
-    fragment: string;
-
-    /**
-     * In render context uniform definitions, which are prepended to any
-     * supplied shader(s).
-     */
-    uniform: string;
-
-    /**
-     * Main vertex shader, used to render the root fragment shader.
-     */
-    vertex: string;
-
-    /**
-     * Pattern seed value.
-     */
-    seed: number;
-}
-
-/**
- * Canvas element properties.
- */
-export interface IOptionsPropertiesCanvas {
-    /**
-     * Canvas element CSS styles which to bootstrap after creation,
-     * or during element validation.
-     */
-    styles: Record<string, string>;
-
-    /**
-     * Element which the rendering canvas element should be a child of. If this
-     * property is not set, the default parent will be set to `body`.
-     */
-    parent: Element;
-
-    /**
-     * Wether the renderer instance should react to viewport changes. The
-     * resolution of the renderer is determined by the canvas element size.
-     */
-    resize: boolean;
-}
-
-/**
- * Library option properties.
- */
-export interface IOptionsProperties {
-    /**
-     * Canvas element properties.
-     */
-    canvas: IOptionsPropertiesCanvas;
-
-    /**
-     * WebGL shader properties.
-     */
-    shader: IOptionsPropertiesShaders;
-}
-
-/**
- * Library option methods.
- */
-export interface IOptionsMethods {
-    onBeforeRender: OnBeforeRenderFn;
-    onAfterRender: OnAfterRenderFn;
-    onError: OnErrorFn;
-    onInit: OnInitFn;
-}
+export type WebGLDeclaration<T extends WebGLUniform> = T extends boolean
+    ? EWebGLTypeDeclaration.BOOL
+    : T extends number
+      ? K<EWebGLTypeDeclaration.INT> | K<EWebGLTypeDeclaration.FLOAT>
+      : T extends Matrix2<GLSLBoolean>
+        ? K<EWebGLTypeDeclaration.BVEC2>
+        : T extends Matrix3<GLSLBoolean>
+          ? K<EWebGLTypeDeclaration.BVEC3>
+          : T extends Matrix4<GLSLBoolean>
+            ? K<EWebGLTypeDeclaration.BVEC4>
+            : T extends Matrix2<number>
+              ? K<EWebGLTypeDeclaration.VEC2> | K<EWebGLTypeDeclaration.IVEC2>
+              : T extends Matrix3<number>
+                ? K<EWebGLTypeDeclaration.VEC3> | K<EWebGLTypeDeclaration.IVEC3>
+                : T extends Matrix4<number>
+                  ?
+                        | K<EWebGLTypeDeclaration.VEC4>
+                        | K<EWebGLTypeDeclaration.IVEC4>
+                  : T extends Float32Array
+                    ?
+                          | K<EWebGLTypeDeclaration.MAT2>
+                          | K<EWebGLTypeDeclaration.MAT3>
+                          | K<EWebGLTypeDeclaration.MAT4>
+                    : T extends WebGLTexture
+                      ?
+                            | K<EWebGLTypeDeclaration.SAMPLER2D>
+                            | K<EWebGLTypeDeclaration.SAMPLERCUBE>
+                      : never | void;
